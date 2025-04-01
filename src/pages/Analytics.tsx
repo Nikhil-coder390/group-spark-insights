@@ -102,7 +102,7 @@ const Analytics = () => {
                     <SelectValue placeholder="All Sections" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Sections</SelectItem>
+                    <SelectItem value="all-sections">All Sections</SelectItem>
                     {sections.map(section => (
                       <SelectItem key={section} value={section}>
                         Section {section}
@@ -122,7 +122,7 @@ const Analytics = () => {
                     <SelectValue placeholder="All Departments" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Departments</SelectItem>
+                    <SelectItem value="all-departments">All Departments</SelectItem>
                     {departments.map(dept => (
                       <SelectItem key={dept} value={dept}>
                         {dept}
@@ -142,7 +142,7 @@ const Analytics = () => {
                     <SelectValue placeholder="All Years" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Years</SelectItem>
+                    <SelectItem value="all-years">All Years</SelectItem>
                     {years.map(year => (
                       <SelectItem key={year} value={year}>
                         Year {year}
