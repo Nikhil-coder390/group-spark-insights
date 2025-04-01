@@ -81,13 +81,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Create profile for a new user
   const createProfile = async (userId: string, userData: Partial<ProfileRow>) => {
     try {
+      // Ensure the role is properly cast as a UserRole enum value
+      const userRole: UserRole = (userData.role || 'student') as UserRole;
+      
       const { error } = await supabase
         .from('profiles')
         .insert({
           id: userId,
           name: userData.name || '',
           email: userData.email || '',
-          role: userData.role || 'student',
+          role: userRole,
           roll_number: userData.roll_number,
           department: userData.department,
           section: userData.section,
@@ -152,10 +155,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               if (!userProfile) {
                 console.log('Profile not found, creating a new one');
                 
+                // Cast the role properly to ensure it's a valid UserRole
+                const userRole: UserRole = (session.user.user_metadata.role || 'student') as UserRole;
+                
                 const userData = {
                   name: session.user.user_metadata.name || '',
                   email: session.user.email || '',
-                  role: session.user.user_metadata.role || 'student' as UserRole,
+                  role: userRole,
                   roll_number: session.user.user_metadata.rollNumber,
                   department: session.user.user_metadata.department,
                   section: session.user.user_metadata.section,
@@ -265,13 +271,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (data: RegisterData) => {
     try {
       setIsLoading(true);
+      
+      // Ensure the role is properly cast as a UserRole enum value
+      const userRole: UserRole = data.role as UserRole;
+      
       const { data: authData, error } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
         options: {
           data: {
             name: data.name,
-            role: data.role,
+            role: userRole,
             rollNumber: data.rollNumber,
             department: data.department,
             section: data.section,
@@ -289,7 +299,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         await createProfile(authData.user.id, {
           name: data.name,
           email: data.email,
-          role: data.role,
+          role: userRole,
           roll_number: data.rollNumber,
           department: data.department,
           section: data.section,

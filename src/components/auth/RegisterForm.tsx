@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -9,7 +8,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
-import { UserRole } from "@/types";
+import { UserRole } from "@/types/supabase";
 
 const RegisterForm = () => {
   const [name, setName] = useState("");
@@ -17,15 +16,6 @@ const RegisterForm = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [role, setRole] = useState<UserRole>("student");
-  
-  // Student fields
-  const [rollNumber, setRollNumber] = useState("");
-  const [department, setDepartment] = useState("");
-  const [section, setSection] = useState("");
-  const [year, setYear] = useState("");
-  
-  // Instructor fields
-  const [designation, setDesignation] = useState("");
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { register } = useAuth();
@@ -51,7 +41,7 @@ const RegisterForm = () => {
         name,
         email,
         password,
-        role,
+        role: role as UserRole,
         ...(role === "student" 
           ? { rollNumber, department, section, year } 
           : { designation }),
@@ -64,6 +54,7 @@ const RegisterForm = () => {
       });
       navigate("/dashboard");
     } catch (error: any) {
+      console.error("Registration error:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to register. Please try again.",
