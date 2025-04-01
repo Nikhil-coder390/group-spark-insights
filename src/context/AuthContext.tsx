@@ -1,8 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { UserRole } from "@/types";
-import { ProfileRow } from "@/types/supabase";
+import { ProfileRow, UserRole } from "@/types/supabase";
 
 interface User {
   id: string;
@@ -29,12 +28,23 @@ interface RegisterData {
   designation?: string;
 }
 
+interface UpdateProfileData {
+  name?: string;
+  email?: string;
+  rollNumber?: string;
+  department?: string;
+  section?: string;
+  year?: string;
+  designation?: string;
+}
+
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
+  updateProfile: (data: UpdateProfileData) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -43,6 +53,7 @@ const AuthContext = createContext<AuthContextType>({
   login: async () => {},
   register: async () => {},
   logout: async () => {},
+  updateProfile: async () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -85,7 +96,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           
           if (profileError) throw profileError;
           
-          setUser(profileToUser(profile));
+          setUser(profileToUser(profile as ProfileRow));
         }
       } catch (error) {
         console.error('Auth session error:', error);
@@ -111,7 +122,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             console.error('Profile fetch error:', profileError);
             setUser(null);
           } else {
-            setUser(profileToUser(profile));
+            setUser(profileToUser(profile as ProfileRow));
           }
         } else {
           setUser(null);
@@ -167,6 +178,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const updateProfile = async (data: UpdateProfileData) => {
+    try {
+      if (!user) throw new Error('No user is logged in');
+
+      const updates = {
+        name: data.name,
+        email: data.email,
+        roll_number: data.rollNumber,
+        department: data.department,
+        section: data.section,
+        year: data.year,
+        designation: data.designation,
+      };
+
+      const { error } = await supabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      // Update local user state
+      setUser(prev => prev ? {
+        ...prev,
+        name: data.name || prev.name,
+        email: data.email || prev.email,
+        rollNumber: data.rollNumber || prev.rollNumber,
+        department: data.department || prev.department,
+        section: data.section || prev.section,
+        year: data.year || prev.year,
+        designation: data.designation || prev.designation,
+      } : null);
+
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to update profile');
+    }
+  };
+
   const logout = async () => {
     try {
       const { error } = await supabase.auth.signOut();
@@ -186,6 +235,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         login,
         register,
         logout,
+        updateProfile,
       }}
     >
       {children}

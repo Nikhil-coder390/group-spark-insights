@@ -1,26 +1,69 @@
 
-import { Database } from "@/integrations/supabase/types";
+// Use specific types instead of trying to reference the generated types
+export type UserRole = 'student' | 'instructor';
 
-// Export Supabase table types for easier access
-export type ProfileRow = Database['public']['Tables']['profiles']['Row'];
-export type GDSessionRow = Database['public']['Tables']['gd_sessions']['Row'];
-export type GDParticipantRow = Database['public']['Tables']['gd_participants']['Row'];
-export type GDEvaluatorRow = Database['public']['Tables']['gd_evaluators']['Row'];
-export type EvaluationRow = Database['public']['Tables']['evaluations']['Row'];
+// Define the basic structure for each table row
+export type ProfileRow = {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  department: string | null;
+  section: string | null;
+  year: string | null;
+  roll_number: string | null;
+  designation: string | null;
+  created_at: string;
+};
 
-// Export insert types
-export type ProfileInsert = Database['public']['Tables']['profiles']['Insert'];
-export type GDSessionInsert = Database['public']['Tables']['gd_sessions']['Insert'];
-export type GDParticipantInsert = Database['public']['Tables']['gd_participants']['Insert'];
-export type GDEvaluatorInsert = Database['public']['Tables']['gd_evaluators']['Insert'];
-export type EvaluationInsert = Database['public']['Tables']['evaluations']['Insert'];
+export type GDSessionRow = {
+  id: string;
+  topic: string;
+  details: string;
+  group_name: string;
+  group_number: string;
+  date: string;
+  created_by: string;
+  created_at: string;
+};
 
-// Export update types
-export type ProfileUpdate = Database['public']['Tables']['profiles']['Update'];
-export type GDSessionUpdate = Database['public']['Tables']['gd_sessions']['Update'];
-export type GDParticipantUpdate = Database['public']['Tables']['gd_participants']['Update'];
-export type GDEvaluatorUpdate = Database['public']['Tables']['gd_evaluators']['Update'];
-export type EvaluationUpdate = Database['public']['Tables']['evaluations']['Update'];
+export type GDParticipantRow = {
+  id: string;
+  gd_session_id: string;
+  student_id: string;
+  created_at: string;
+};
 
-// User role from Supabase enum
-export type UserRole = Database['public']['Enums']['user_role'];
+export type GDEvaluatorRow = {
+  id: string;
+  gd_session_id: string;
+  evaluator_id: string;
+  created_at: string;
+};
+
+export type EvaluationRow = {
+  id: string;
+  gd_session_id: string;
+  student_id: string;
+  evaluator_id: string;
+  articulation: number;
+  relevance: number;
+  leadership: number;
+  non_verbal_communication: number;
+  impression: number;
+  created_at: string;
+};
+
+// Define insert types
+export type ProfileInsert = Omit<ProfileRow, 'id' | 'created_at'> & { id?: string; created_at?: string };
+export type GDSessionInsert = Omit<GDSessionRow, 'id' | 'created_at'> & { id?: string; created_at?: string };
+export type GDParticipantInsert = Omit<GDParticipantRow, 'id' | 'created_at'> & { id?: string; created_at?: string };
+export type GDEvaluatorInsert = Omit<GDEvaluatorRow, 'id' | 'created_at'> & { id?: string; created_at?: string };
+export type EvaluationInsert = Omit<EvaluationRow, 'id' | 'created_at'> & { id?: string; created_at?: string };
+
+// Define update types
+export type ProfileUpdate = Partial<Omit<ProfileRow, 'id'>> & { id?: string };
+export type GDSessionUpdate = Partial<Omit<GDSessionRow, 'id'>> & { id?: string };
+export type GDParticipantUpdate = Partial<Omit<GDParticipantRow, 'id'>> & { id?: string };
+export type GDEvaluatorUpdate = Partial<Omit<GDEvaluatorRow, 'id'>> & { id?: string };
+export type EvaluationUpdate = Partial<Omit<EvaluationRow, 'id'>> & { id?: string };
