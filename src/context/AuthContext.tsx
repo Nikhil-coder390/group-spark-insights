@@ -78,7 +78,91 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   };
 
+  // Create profile for a new user
+  const createProfile = async (userId: string, userData: Partial<ProfileRow>) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .insert({
+          id: userId,
+          name: userData.name || '',
+          email: userData.email || '',
+          role: userData.role || 'student',
+          roll_number: userData.roll_number,
+          department: userData.department,
+          section: userData.section,
+          year: userData.year,
+          designation: userData.designation,
+        });
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error creating profile:', error);
+      throw error;
+    }
+  };
+
   useEffect(() => {
+    // Set up auth subscription first
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session) {
+          try {
+            // Get user profile
+            const { data: profile, error: profileError } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
+            
+            if (profileError) {
+              if (profileError.code === 'PGRST116') {
+                // Profile not found, create one
+                const userData = {
+                  name: session.user.user_metadata.name || '',
+                  email: session.user.email || '',
+                  role: session.user.user_metadata.role || 'student' as UserRole,
+                  roll_number: session.user.user_metadata.rollNumber,
+                  department: session.user.user_metadata.department,
+                  section: session.user.user_metadata.section,
+                  year: session.user.user_metadata.year,
+                  designation: session.user.user_metadata.designation,
+                };
+                
+                await createProfile(session.user.id, userData);
+                
+                // Fetch the profile again
+                const { data: newProfile, error: newProfileError } = await supabase
+                  .from('profiles')
+                  .select('*')
+                  .eq('id', session.user.id)
+                  .single();
+                
+                if (newProfileError) {
+                  console.error('Profile fetch error after creation:', newProfileError);
+                  setUser(null);
+                } else {
+                  setUser(profileToUser(newProfile as ProfileRow));
+                }
+              } else {
+                console.error('Profile fetch error:', profileError);
+                setUser(null);
+              }
+            } else {
+              setUser(profileToUser(profile as ProfileRow));
+            }
+          } catch (err) {
+            console.error('Error in auth state change:', err);
+            setUser(null);
+          }
+        } else {
+          setUser(null);
+        }
+        
+        setIsLoading(false);
+      }
+    );
+
     // Check for existing session
     const checkSession = async () => {
       try {
@@ -87,16 +171,54 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (error) throw error;
         
         if (session) {
-          // Get user profile
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-          
-          if (profileError) throw profileError;
-          
-          setUser(profileToUser(profile as ProfileRow));
+          try {
+            // Get user profile
+            const { data: profile, error: profileError } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
+            
+            if (profileError) {
+              if (profileError.code === 'PGRST116') {
+                // Profile not found, create one
+                const userData = {
+                  name: session.user.user_metadata.name || '',
+                  email: session.user.email || '',
+                  role: session.user.user_metadata.role || 'student' as UserRole,
+                  roll_number: session.user.user_metadata.rollNumber,
+                  department: session.user.user_metadata.department,
+                  section: session.user.user_metadata.section,
+                  year: session.user.user_metadata.year,
+                  designation: session.user.user_metadata.designation,
+                };
+                
+                await createProfile(session.user.id, userData);
+                
+                // Fetch the profile again
+                const { data: newProfile, error: newProfileError } = await supabase
+                  .from('profiles')
+                  .select('*')
+                  .eq('id', session.user.id)
+                  .single();
+                
+                if (newProfileError) {
+                  console.error('Profile fetch error after creation:', newProfileError);
+                  setUser(null);
+                } else {
+                  setUser(profileToUser(newProfile as ProfileRow));
+                }
+              } else {
+                console.error('Profile fetch error:', profileError);
+                setUser(null);
+              }
+            } else {
+              setUser(profileToUser(profile as ProfileRow));
+            }
+          } catch (err) {
+            console.error('Session check error:', err);
+            setUser(null);
+          }
         }
       } catch (error) {
         console.error('Auth session error:', error);
@@ -106,31 +228,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     checkSession();
-
-    // Set up auth subscription
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (session) {
-          // Get user profile
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-          
-          if (profileError) {
-            console.error('Profile fetch error:', profileError);
-            setUser(null);
-          } else {
-            setUser(profileToUser(profile as ProfileRow));
-          }
-        } else {
-          setUser(null);
-        }
-        
-        setIsLoading(false);
-      }
-    );
 
     return () => {
       subscription.unsubscribe();
@@ -171,6 +268,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       if (error) throw error;
+      
+      if (authData.user) {
+        // Create a profile for the new user
+        await createProfile(authData.user.id, {
+          name: data.name,
+          email: data.email,
+          role: data.role,
+          roll_number: data.rollNumber,
+          department: data.department,
+          section: data.section,
+          year: data.year,
+          designation: data.designation,
+        });
+      }
       
       // The onAuthStateChange listener will update the user
     } catch (error: any) {
