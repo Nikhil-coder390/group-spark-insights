@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,9 +12,17 @@ const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { login } = useAuth();
+  const { login, user, isLoading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Redirect if user is already logged in
+  useEffect(() => {
+    if (user && !isLoading) {
+      console.log("User is logged in, redirecting to dashboard");
+      navigate("/dashboard");
+    }
+  }, [user, isLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +44,7 @@ const LoginForm = () => {
         title: "Success",
         description: "You've successfully logged in",
       });
-      navigate("/dashboard");
+      // Let the useEffect handle the navigation
     } catch (error: any) {
       toast({
         title: "Error",
@@ -47,6 +55,11 @@ const LoginForm = () => {
       setIsSubmitting(false);
     }
   };
+
+  // If we're already logged in and not loading, redirect
+  if (user && !isLoading) {
+    return null; // or a loading spinner if you prefer
+  }
 
   return (
     <Card className="w-full max-w-md animate-fade-in">
