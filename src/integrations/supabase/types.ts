@@ -9,7 +9,219 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      evaluations: {
+        Row: {
+          articulation: number
+          created_at: string
+          evaluator_id: string
+          gd_session_id: string
+          id: string
+          impression: number
+          leadership: number
+          non_verbal_communication: number
+          relevance: number
+          student_id: string
+        }
+        Insert: {
+          articulation: number
+          created_at?: string
+          evaluator_id: string
+          gd_session_id: string
+          id?: string
+          impression: number
+          leadership: number
+          non_verbal_communication: number
+          relevance: number
+          student_id: string
+        }
+        Update: {
+          articulation?: number
+          created_at?: string
+          evaluator_id?: string
+          gd_session_id?: string
+          id?: string
+          impression?: number
+          leadership?: number
+          non_verbal_communication?: number
+          relevance?: number
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evaluations_evaluator_id_fkey"
+            columns: ["evaluator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evaluations_gd_session_id_fkey"
+            columns: ["gd_session_id"]
+            isOneToOne: false
+            referencedRelation: "gd_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evaluations_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gd_evaluators: {
+        Row: {
+          created_at: string
+          evaluator_id: string
+          gd_session_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          evaluator_id: string
+          gd_session_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          evaluator_id?: string
+          gd_session_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gd_evaluators_evaluator_id_fkey"
+            columns: ["evaluator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gd_evaluators_gd_session_id_fkey"
+            columns: ["gd_session_id"]
+            isOneToOne: false
+            referencedRelation: "gd_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gd_participants: {
+        Row: {
+          created_at: string
+          gd_session_id: string
+          id: string
+          student_id: string
+        }
+        Insert: {
+          created_at?: string
+          gd_session_id: string
+          id?: string
+          student_id: string
+        }
+        Update: {
+          created_at?: string
+          gd_session_id?: string
+          id?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gd_participants_gd_session_id_fkey"
+            columns: ["gd_session_id"]
+            isOneToOne: false
+            referencedRelation: "gd_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gd_participants_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gd_sessions: {
+        Row: {
+          created_at: string
+          created_by: string
+          date: string
+          details: string
+          group_name: string
+          group_number: string
+          id: string
+          topic: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          date: string
+          details: string
+          group_name: string
+          group_number: string
+          id?: string
+          topic: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          date?: string
+          details?: string
+          group_name?: string
+          group_number?: string
+          id?: string
+          topic?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gd_sessions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          department: string | null
+          designation: string | null
+          email: string
+          id: string
+          name: string
+          role: Database["public"]["Enums"]["user_role"]
+          roll_number: string | null
+          section: string | null
+          year: string | null
+        }
+        Insert: {
+          created_at?: string
+          department?: string | null
+          designation?: string | null
+          email: string
+          id: string
+          name: string
+          role: Database["public"]["Enums"]["user_role"]
+          roll_number?: string | null
+          section?: string | null
+          year?: string | null
+        }
+        Update: {
+          created_at?: string
+          department?: string | null
+          designation?: string | null
+          email?: string
+          id?: string
+          name?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          roll_number?: string | null
+          section?: string | null
+          year?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +230,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      user_role: "student" | "instructor"
     }
     CompositeTypes: {
       [_ in never]: never
