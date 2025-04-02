@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ProfileRow, UserRole } from "@/types/supabase";
@@ -62,7 +61,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Convert ProfileRow to User
   const profileToUser = (profile: ProfileRow): User => {
     return {
       id: profile.id,
@@ -78,10 +76,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   };
 
-  // Create profile for a new user
   const createProfile = async (userId: string, userData: Partial<ProfileRow>) => {
     try {
-      // Ensure the role is properly cast as a UserRole enum value
       const userRole: UserRole = (userData.role || 'student') as UserRole;
       
       const { error } = await supabase
@@ -110,7 +106,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Fetch user profile
   const fetchUserProfile = async (userId: string): Promise<User | null> => {
     try {
       console.log('Fetching profile for user:', userId);
@@ -140,22 +135,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state changed:', event, session?.user?.id);
         
         if (session) {
-          // Use setTimeout to avoid potential lock in Supabase client
           setTimeout(async () => {
             try {
               let userProfile = await fetchUserProfile(session.user.id);
               
-              // If profile doesn't exist, try to create one
               if (!userProfile) {
                 console.log('Profile not found, creating a new one');
                 
-                // Cast the role properly to ensure it's a valid UserRole
                 const userRole: UserRole = (session.user.user_metadata.role || 'student') as UserRole;
                 
                 const userData = {
@@ -171,7 +162,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 
                 await createProfile(session.user.id, userData);
                 
-                // Fetch the profile again after creation
                 userProfile = await fetchUserProfile(session.user.id);
               }
               
@@ -190,7 +180,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     );
 
-    // Check for existing session
     const checkSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
@@ -225,7 +214,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               
               await createProfile(session.user.id, userData);
               
-              // Fetch the profile again after creation
               const newProfile = await fetchUserProfile(session.user.id);
               setUser(newProfile);
             }
@@ -258,7 +246,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) throw error;
       
-      // The onAuthStateChange listener will update the user
       console.log('Login successful');
     } catch (error: any) {
       console.error('Login error:', error);
@@ -272,7 +259,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setIsLoading(true);
       
-      // Ensure the role is properly cast as a UserRole enum value
       const userRole: UserRole = data.role as UserRole;
       
       const { data: authData, error } = await supabase.auth.signUp({
@@ -282,11 +268,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           data: {
             name: data.name,
             role: userRole,
-            rollNumber: data.rollNumber,
-            department: data.department,
-            section: data.section,
-            year: data.year,
-            designation: data.designation,
+            rollNumber: data.rollNumber || null,
+            department: data.department || null,
+            section: data.section || null,
+            year: data.year || null,
+            designation: data.designation || null,
           },
         },
       });
@@ -295,17 +281,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (authData.user) {
         console.log('User registered, creating profile');
-        // Create a profile for the new user
-        await createProfile(authData.user.id, {
-          name: data.name,
-          email: data.email,
-          role: userRole,
-          roll_number: data.rollNumber,
-          department: data.department,
-          section: data.section,
-          year: data.year,
-          designation: data.designation,
-        });
       }
       
       console.log('Registration successful');
@@ -341,7 +316,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) throw error;
 
-      // Update local user state
       setUser(prev => prev ? {
         ...prev,
         name: data.name || prev.name,
