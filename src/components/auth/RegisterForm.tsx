@@ -51,11 +51,13 @@ const RegisterForm = () => {
         name,
         email,
         password,
-        role: role as UserRole,
+        role,
         ...(role === "student" 
           ? { rollNumber, department, section, year } 
           : { designation }),
       };
+      
+      console.log("Registering with data:", userData);
       
       await register(userData);
       toast({
