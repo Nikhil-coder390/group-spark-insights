@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -44,6 +45,7 @@ const RegisterForm = () => {
     setIsSubmitting(true);
     
     try {
+      // Prepare user data with correct field names for metadata
       const userData = {
         name,
         email,
@@ -51,13 +53,13 @@ const RegisterForm = () => {
         role,
         ...(role === "student" 
           ? { 
-              rollNumber, 
-              department, 
-              section, 
-              year 
+              rollNumber: rollNumber || null, 
+              department: department || null, 
+              section: section || null, 
+              year: year || null 
             } 
           : { 
-              designation 
+              designation: designation || null 
             }),
       };
       

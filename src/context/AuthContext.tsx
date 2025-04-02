@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ProfileRow, UserRole } from "@/types/supabase";
@@ -261,6 +262,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       const userRole: UserRole = data.role as UserRole;
       
+      // Ensure all metadata fields are properly defined
       const { data: authData, error } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
@@ -280,11 +282,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) throw error;
       
       if (authData.user) {
-        console.log('User registered, creating profile');
+        console.log('User registered successfully:', authData.user.id);
+        // The onAuthStateChange listener will handle profile creation
       }
       
       console.log('Registration successful');
-      // The onAuthStateChange listener will update the user
     } catch (error: any) {
       console.error('Registration error:', error);
       throw new Error(error.message || 'Failed to register');
